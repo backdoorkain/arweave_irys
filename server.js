@@ -8,7 +8,7 @@ const app = express();
 const upload = multer({ dest: 'uploads/' });
 const PORT = process.env.PORT || 3000;
 
-// Inicializar la conexión de la instancia unificada de Irys apuntando a Arweave Mainnet
+// Inicializar la conexión unificada de Irys con la sintaxis moderna de Mainnet
 let irysInstance;
 let walletAddress = "";
 
@@ -16,14 +16,13 @@ try {
     if (process.env.ARWEAVE_WALLET) {
         const wallet = JSON.parse(process.env.ARWEAVE_WALLET);
         
-        // Instancia unificada oficial para producción
+        // CORRECCIÓN PRINCIPAL: Usamos 'network: "mainnet"' en lugar de la URL directa del nodo
         irysInstance = new Irys({
-            url: "https://irys.xyz",
+            network: "mainnet", // Configura automáticamente los endpoints correctos de producción
             token: "arweave",
             key: wallet,
         });
 
-        // Obtener la dirección pública para la consulta GraphQL posterior
         walletAddress = irysInstance.address;
         console.log(`>>> Conectado exitosamente a Irys Mainnet. Dirección: ${walletAddress}`);
     } else {
@@ -37,7 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- RUTA 1: SUBIR ARCHIVO MEDIANTE BUNDLES (OPTIMIZADO) ---
+// --- RUTA 1: SUBIR ARCHIVO MEDIANTE BUNDLES ---
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No se envió ningún archivo.' });
@@ -46,17 +45,15 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         const fileData = fs.readFileSync(path.resolve(req.file.path));
         const dataBuffer = Buffer.from(fileData);
 
-        // Etiquetas (Tags) para indexar en la red de Arweave
         const tags = [
             { name: 'Content-Type', value: req.file.mimetype },
             { name: 'App-Name', value: 'MiArweaveIrysUploader' },
             { name: 'File-Name', value: req.file.originalname }
         ];
 
-        // Subida empaquetada instantánea (Gratis si pesa menos de 100 KB)
+        // Ejecutar subida empaquetada (Gratis si pesa menos de 100 KB)
         const receipt = await irysInstance.upload(dataBuffer, { tags });
 
-        // Limpieza obligatoria del almacenamiento temporal en Render
         if (fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
@@ -76,12 +73,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 });
 
-// --- RUTA 2: LISTAR ARCHIVOS (GraphQL adaptado a Irys) ---
+// --- RUTA 2: LISTAR ARCHIVOS (GraphQL) ---
 app.get('/api/files', async (req, res) => {
     try {
         if (!walletAddress) return res.status(500).json({ error: 'Dirección de billetera no lista.' });
 
-        // GraphQL busca las transacciones hechas bajo la etiqueta de esta app de Irys
         const query = {
             query: `query {
               transactions(
@@ -99,7 +95,6 @@ app.get('/api/files', async (req, res) => {
             }`
         };
 
-        // Irys comparte la misma infraestructura de gateways de Arweave
         const response = await irysInstance.api.post('/graphql', query);
         const edges = response.data.data.transactions.edges;
 
@@ -112,7 +107,7 @@ app.get('/api/files', async (req, res) => {
                 id: edge.node.id,
                 name: nameTag ? nameTag.value : 'Archivo sin nombre',
                 type: typeTag ? typeTag.value : 'Desconocido',
-                url: `https://arweave.net{edge.node.id}` // Descarga directa tradicional
+                url: `https://arweave.net/${edge.node.id}`
             };
         });
 
