@@ -74,26 +74,22 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // --- RUTA 2: LISTAR ARCHIVOS (GraphQL) ---
-app.get('/api/files', async (req, res) => {
+app.get('/api/balance', async (req, res) => {
     try {
-        if (!walletAddress) return res.status(500).json({ error: 'Dirección de billetera no lista.' });
-
-        const query = {
-            query: `query {
-              transactions(
-                owners: ["${walletAddress}"]
-                tags: { name: "App-Name", values: ["MiArweaveIrysUploader"] }
-                first: 50
-              ) {
-                edges {
-                  node {
-                    id
-                    tags { name value }
-                  }
-                }
-              }
-            }`
-        };
+        if (!irysInstance) return res.status(500).json({ error: 'Instancia Irys no inicializada.' });
+        
+        // Obtener el saldo en la unidad mínima (Winston)
+        const atomicBalance = await irysInstance.getLoadedBalance();
+        
+        // Convertirlo a formato legible de AR tokens usando el SDK interno
+        const arBalance = irysInstance.utils.fromAtomic(atomicBalance).toString();
+        
+        res.json({ success: true, balance: arBalance });
+    } catch (error) {
+        console.error("Error al consultar saldo:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
         const response = await irysInstance.api.post('/graphql', query);
         const edges = response.data.data.transactions.edges;
