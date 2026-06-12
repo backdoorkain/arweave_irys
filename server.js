@@ -43,31 +43,27 @@ app.get('/', (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- RUTA 1: SUBIR ARCHIVO MEDIANTE BUNDLES ---
-app.post('/api/upload', upload.single('file'), async (req, res) => {
+// --- RUTA 5 REPARADA: RETIRO CON EL METODO DE INSTANCIA DIRECTO ---
+app.post('/api/withdraw', async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ error: 'No se envió ningún archivo.' });
-        if (!irysInstance) return res.status(500).json({ error: 'Infraestructura Irys no lista.' });
+        const { amount } = req.body;
+        if (!amount || parseFloat(amount) <= 0) return res.status(400).json({ error: 'Monto inválido.' });
+        if (!irysInstance) return res.status(500).json({ error: 'Irys no listo.' });
 
-        const fileData = fs.readFileSync(path.resolve(req.file.path));
-        const dataBuffer = Buffer.from(fileData);
+        // Convertir la cantidad a Winston (unidad atómica)
+        const atomicAmount = irysInstance.utils.toAtomic(amount);
 
-        const tags = [
-            { name: 'Content-Type', value: req.file.mimetype },
-            { name: 'App-Name', value: 'MiArweaveIrysUploader' },
-            { name: 'File-Name', value: req.file.originalname }
-        ];
+        console.log(`>>> Ejecutando orden de retiro directo por: ${amount} AR...`);
 
-        const receipt = await irysInstance.upload(dataBuffer, { tags });
+        // SINTAXIS NATIVA DEFINITIVA: El método withdrawBalance vive directamente en la raíz de irysInstance
+        const withdrawResult = await irysInstance.withdrawBalance(atomicAmount);
 
-        if (fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-
-        return res.json({ success: true, txId: receipt.id });
+        return res.json({
+            success: true,
+            txId: withdrawResult.id || 'Confirmado por la red de Irys'
+        });
     } catch (error) {
-        console.error(error);
-        if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        console.error("Error al retirar:", error);
         return res.status(500).json({ error: error.message });
     }
 });
