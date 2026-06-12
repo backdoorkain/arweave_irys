@@ -3,52 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arweave Explorer & Uploader</title>
+    <title>Arweave Explorer & Uploader (Irys Edition)</title>
+    <!-- Cargamos la versión estable del CDN de Tailwind CSS -->
     <script src="https://tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
 
-    <div class="max-w-4xl mx-auto p-6 space-y-8">
+    <div class="max-w-5xl mx-auto p-6 space-y-8">
         
         <!-- Encabezado -->
         <header class="text-center py-6 border-b border-slate-800">
             <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
-                Arweave Permaweb Box
+                Arweave Permaweb Box (Irys)
             </h1>
-            <p class="text-slate-400 mt-2 text-sm">Sube y almacena archivos para siempre en la blockchain</p>
+            <p class="text-slate-400 mt-2 text-sm">Almacenamiento permanente ultrarrápido y optimizado mediante paquetes (Bundles)</p>
         </header>
 
-        <!-- Sección de Subida -->
-        <section class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">⚡ Sube un nuevo archivo</h2>
+        <!-- Bloque Principal de Operaciones -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <form id="uploadForm" class="space-y-4">
-                <div class="border-2 border-dashed border-slate-700 hover:border-amber-500 transition rounded-xl p-6 text-center cursor-pointer relative bg-slate-950">
-                    <input type="file" id="fileInput" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <p id="fileLabel" class="text-slate-400 text-sm">Arrastra tu archivo aquí o haz clic para buscar</p>
+            <!-- Panel de Control de Saldo y Fondeo -->
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+                <div>
+                    <h2 class="text-xl font-bold mb-2 flex items-center gap-2">💰 Tu Saldo Irys</h2>
+                    <p class="text-slate-400 text-xs mb-4">Fondos cargados en el monedero interno del nodo de empaquetado</p>
+                    
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center my-2">
+                        <span id="txtBalance" class="text-2xl font-mono font-bold text-amber-400">0.000000</span>
+                        <span class="text-xs text-slate-500 block mt-1">AR Tokens</span>
+                    </div>
                 </div>
                 
-                <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg shadow-orange-900/20 active:scale-[0.99]">
-                    Subir a la Red Principal
-                </button>
-            </form>
-            
-            <!-- Notificaciones -->
-            <div id="statusMessage" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
-        </section>
+                <div class="space-y-2 mt-4">
+                    <input type="number" id="fundAmount" placeholder="Monto en AR (Ej: 0.001)" step="0.0001" min="0.0001" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-amber-500">
+                    <button id="btnFund" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold py-2 px-4 rounded-xl transition text-sm active:scale-[0.98]">
+                        📥 Depositar con Wander
+                    </button>
+                </div>
+            </div>
 
-        <!-- Sección de Listado -->
+            <!-- Panel de Subida de Archivos -->
+            <div class="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">⚡ Sube un nuevo archivo</h2>
+                
+                <form id="uploadForm" class="space-y-4">
+                    <div class="border-2 border-dashed border-slate-700 hover:border-amber-500 transition rounded-xl p-6 text-center cursor-pointer relative bg-slate-950">
+                        <input type="file" id="fileInput" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <p id="fileLabel" class="text-slate-400 text-sm">Arrastra tu archivo aquí o haz clic para buscar</p>
+                    </div>
+                    
+                    <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg shadow-orange-900/20 active:scale-[0.99]">
+                        Subir de Forma Instantánea
+                    </button>
+                </form>
+                
+                <!-- Notificaciones de Estado -->
+                <div id="statusMessage" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
+            </div>
+        </div>
+
+        <!-- Sección de Listado de Archivos -->
         <section class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold flex items-center gap-2">📁 Tus Archivos Guardados</h2>
                 <button id="btnRefresh" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-1.5 px-3 rounded-lg transition">
-                    🔄 Actualizar
+                    🔄 Actualizar todo
                 </button>
             </div>
 
-            <div id="loadingList" class="text-center text-slate-500 py-8 hidden">Buscando transacciones en Arweave...</div>
+            <div id="loadingList" class="text-center text-slate-500 py-8 hidden">Consultando transacciones en Arweave GraphQL...</div>
 
-            <!-- Tabla/Lista de Archivos -->
+            <!-- Tabla de Datos -->
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -59,14 +84,13 @@
                         </tr>
                     </thead>
                     <tbody id="filesTableBody" class="divide-y divide-slate-800/50">
-                        <!-- Se llena dinámicamente -->
+                        <!-- Los datos se inyectan dinámicamente desde JavaScript -->
                     </tbody>
                 </table>
             </div>
         </section>
     </div>
-
-    <!-- Lógica de Frontend -->
+    <!-- Lógica del Cliente -->
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileLabel = document.getElementById('fileLabel');
@@ -76,8 +100,62 @@
         const btnRefresh = document.getElementById('btnRefresh');
         const filesTableBody = document.getElementById('filesTableBody');
         const loadingList = document.getElementById('loadingList');
+        
+        // Elementos del nuevo módulo de saldo/fondeo
+        const txtBalance = document.getElementById('txtBalance');
+        const fundAmount = document.getElementById('fundAmount');
+        const btnFund = document.getElementById('btnFund');
 
-        // Mostrar nombre del archivo seleccionado
+        // Consultar el saldo actual en el nodo de Irys mediante el Backend
+        async function checkIrysBalance() {
+            try {
+                const response = await fetch('/api/balance');
+                const data = await response.json();
+                if (data.success) {
+                    txtBalance.innerText = parseFloat(data.balance).toFixed(6);
+                }
+            } catch (err) {
+                console.error("Error al obtener saldo de Irys:", err);
+            }
+        }
+
+        // Integración segura con la extensión Wander/ArConnect instalada en el navegador
+        btnFund.addEventListener('click', async () => {
+            const amount = fundAmount.value;
+            if (!amount || amount <= 0) {
+                alert("Por favor introduce una cantidad en AR válida.");
+                return;
+            }
+
+            if (!window.arweaveWallet) {
+                alert("No se detectó Wander (ArConnect) instalado. Te redirigiremos para que agregues la extensión.");
+                window.open("https://wander.app", "_blank");
+                return;
+            }
+
+            btnFund.disabled = true;
+            btnFund.innerText = "Abriendo Wander...";
+
+            try {
+                // Solicitar accesos básicos a la billetera criptográfica del usuario
+                await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"]);
+                const userAddress = await window.arweaveWallet.getActiveAddress();
+                
+                alert(`Conectado a Wander: ${userAddress}\n\nPara firmar transacciones financieras de forma robusta y evitar riesgos de inyección, la interfaz de administración oficial de Irys es la vía recomendada. Te abriremos la pestaña para confirmar.`);
+                
+                // Abrir la interfaz web de Irys para que realicen la firma con soporte de librerías actualizado
+                window.open("https://irys.xyz", "_blank");
+            } catch (err) {
+                console.error(err);
+                alert("Operación cancelada por el usuario o rechazada por la billetera.");
+            } finally {
+                btnFund.disabled = false;
+                btnFund.innerText = "📥 Depositar con Wander";
+                setTimeout(checkIrysBalance, 5000);
+            }
+        });
+
+        // Detectar y pintar el nombre del archivo seleccionado por el usuario
         fileInput.addEventListener('change', (e) => {
             if(e.target.files.length > 0) {
                 fileLabel.innerText = `Seleccionado: ${e.target.files[0].name}`;
@@ -86,40 +164,44 @@
             }
         });
 
-        // Enviar formulario de subida
+        // Enviar archivo empaquetado a Irys a través de la API
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            // Deshabilitar UI durante carga
             btnSubmit.disabled = true;
-            btnSubmit.innerText = "Firmando y enviando transacción AR...";
-            showMessage('Procesando archivo en el servidor y transmitiendo a la blockchain...', 'bg-blue-950 border border-blue-800 text-blue-300');
+            btnSubmit.innerText = "Procesando paquete en Irys...";
+            showMessage('Subiendo archivo al bundle y propagando a la Permaweb de forma instantánea...', 'bg-blue-950 border border-blue-800 text-blue-300');
 
             try {
                 const response = await fetch('/api/upload', { method: 'POST', body: formData });
                 const data = await response.json();
 
                 if (data.success) {
-                    showMessage(`🎉 ¡Enviado con éxito! ID de Transacción: ${data.txId}. Aparecerá en la lista en unos minutos.`, 'bg-emerald-950 border border-emerald-800 text-emerald-300');
+                    showMessage(`🎉 ¡Completado! ID de Transacción: ${data.txId}. Ya está disponible en la Web3.`, 'bg-emerald-950 border border-emerald-800 text-emerald-300');
                     uploadForm.reset();
                     fileLabel.innerText = "Arrastra tu archivo aquí o haz clic para buscar";
                     fileLabel.className = "text-slate-400 text-sm";
-                    setTimeout(loadFiles, 2000);
+                    
+                    // Con Irys es instantáneo, recargamos las listas y saldos de inmediato
+                    setTimeout(() => {
+                        loadFiles();
+                        checkIrysBalance();
+                    }, 1500);
                 } else {
                     showMessage(`❌ Error: ${data.error}`, 'bg-rose-950 border border-rose-800 text-rose-300');
                 }
             } catch (err) {
-                showMessage(`❌ Error de conexión al servidor`, 'bg-rose-950 border border-rose-800 text-rose-300');
+                showMessage(`❌ Error de comunicación con el Web Service de Render`, 'bg-rose-950 border border-rose-800 text-rose-300');
             } finally {
                 btnSubmit.disabled = false;
-                btnSubmit.innerText = "Subir a la Red Principal";
+                btnSubmit.innerText = "Subir de Forma Instantánea";
             }
         });
 
-        // Cargar lista de archivos mediante GraphQL
+        // Buscar los archivos indexados mediante consultas GraphQL oficiales de Arweave
         async function loadFiles() {
             loadingList.classList.remove('hidden');
             filesTableBody.innerHTML = '';
@@ -133,7 +215,7 @@
                         const tr = document.createElement('tr');
                         tr.className = "hover:bg-slate-900/40 transition";
                         tr.innerHTML = `
-                            <td class="py-3 font-medium text-slate-200 max-w-[200px] truncate">${file.name}</td>
+                            <td class="py-3 font-medium text-slate-200 max-w-[220px] truncate">${file.name}</td>
                             <td class="py-3 text-slate-400 text-xs">${file.type}</td>
                             <td class="py-3 text-right">
                                 <a href="${file.url}" target="_blank" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-slate-700">
@@ -144,10 +226,10 @@
                         filesTableBody.appendChild(tr);
                     });
                 } else {
-                    filesTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-slate-500 py-6">No se encontraron archivos subidos por esta app todavía.</td></tr>`;
+                    filesTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-slate-500 py-6">No has subido ningún archivo a través de la aplicación de Irys todavía.</td></tr>`;
                 }
             } catch (err) {
-                filesTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-rose-400 py-6">Error al cargar la lista.</td></tr>`;
+                filesTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-rose-400 py-6">Error de red al consultar el Gateway de Arweave.</td></tr>`;
             } finally {
                 loadingList.classList.add('hidden');
             }
@@ -156,12 +238,19 @@
         function showMessage(text, classes) {
             statusMessage.innerText = text;
             statusMessage.className = `mt-4 p-3 rounded-lg text-sm font-medium ${classes}`;
+            statusMessage.classList.remove('hidden');
         }
 
-        btnRefresh.addEventListener('click', loadFiles);
+        btnRefresh.addEventListener('click', () => {
+            loadFiles();
+            checkIrysBalance();
+        });
         
-        // Carga inicial al abrir la página
-        window.addEventListener('DOMContentLoaded', loadFiles);
+        // Cargar saldos y archivos en cuanto la página enciende en Render
+        window.addEventListener('DOMContentLoaded', () => {
+            checkIrysBalance();
+            loadFiles();
+        });
     </script>
 </body>
 </html>
