@@ -46,39 +46,33 @@ app.get('/', (req, res) => {
 // El resto de recursos (si existieran imágenes o css locales) se sirven desde public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- RUTA 1: SUBIR ARCHIVO MEDIANTE BUNDLES ---
-app.post('/api/upload', upload.single('file'), async (req, res) => {
+// --- RUTA 5: RETIRAR FONDOS DE IRYS DE VUELTA A ARWEAVE NATIVO (NUEVO) ---
+app.post('/api/withdraw', async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ error: 'No se envió ningún archivo.' });
-        if (!irysInstance) return res.status(500).json({ error: 'Infraestructura Irys no lista.' });
-
-        const fileData = fs.readFileSync(path.resolve(req.file.path));
-        const dataBuffer = Buffer.from(fileData);
-
-        const tags = [
-            { name: 'Content-Type', value: req.file.mimetype },
-            { name: 'App-Name', value: 'MiArweaveIrysUploader' },
-            { name: 'File-Name', value: req.file.originalname }
-        ];
-
-        const receipt = await irysInstance.upload(dataBuffer, { tags });
-
-        if (fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
+        const { amount } = req.body;
+        if (!amount || parseFloat(amount) <= 0) {
+            return res.status(400).json({ error: 'Monto inválido para retirar.' });
         }
+        if (!irysInstance) {
+            return res.status(500).json({ error: 'Instancia Irys no inicializada.' });
+        }
+
+        // 1. Convertir el monto ingresado en AR a la unidad mínima atómica (Winston)
+        const atomicAmount = irysInstance.utils.toAtomic(amount);
+
+        console.log(`>>> Solicitando retiro automático de ${amount} AR (${atomicAmount} Winston) hacia tu wallet...`);
+
+        // 2. Ejecutar la orden de retiro directo en los servidores de Irys
+        const withdrawResult = await irysInstance.withdraw(atomicAmount);
 
         return res.json({
             success: true,
-            txId: receipt.id,
-            message: "¡Archivo subido e indexado!"
+            message: `Retiro procesado por el nodo con éxito.`,
+            txId: withdrawResult.id || 'N/A'
         });
-
     } catch (error) {
-        console.error("Fallo en subida Irys:", error);
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-        return res.status(500).json({ error: `Error en la red Irys: ${error.message}` });
+        console.error("Fallo al retirar desde el nodo de Irys:", error);
+        return res.status(500).json({ error: `Error en la orden de retiro: ${error.message}` });
     }
 });
 
