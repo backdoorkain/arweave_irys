@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arweave Explorer & Uploader (Irys Edition)</title>
-    <!-- Cargamos la versión estable del CDN de Tailwind CSS -->
+    <!-- CDN Estable de Tailwind CSS -->
     <script src="https://tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
@@ -28,7 +28,7 @@
                     <h2 class="text-xl font-bold mb-2 flex items-center gap-2">💰 Tu Saldo Irys</h2>
                     <p class="text-slate-400 text-xs mb-4">Fondos cargados en el monedero interno del nodo de empaquetado</p>
                     
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 text-center my-2 relative overflow-hidden group">
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center my-2">
                         <span id="txtBalance" class="text-3xl font-mono font-bold text-amber-400">0.000000</span>
                         <span class="text-xs text-slate-500 block mt-1 font-semibold tracking-wider">AR TOKENS</span>
                     </div>
@@ -104,12 +104,10 @@
         const filesTableBody = document.getElementById('filesTableBody');
         const loadingList = document.getElementById('loadingList');
         
-        // Elementos del módulo de saldo y fondeo interno
         const txtBalance = document.getElementById('txtBalance');
         const fundAmount = document.getElementById('fundAmount');
         const btnFund = document.getElementById('btnFund');
 
-        // Consultar el saldo actual en el nodo de Irys mediante el Backend
         async function checkIrysBalance() {
             try {
                 const response = await fetch('/api/balance');
@@ -122,7 +120,6 @@
             }
         }
 
-        // Integración directa con el backend para fondear usando la billetera interna
         btnFund.addEventListener('click', async () => {
             const amount = fundAmount.value;
             if (!amount || amount <= 0) {
@@ -158,16 +155,14 @@
             }
         });
 
-        // Detectar y pintar el nombre del archivo seleccionado por el usuario
         fileInput.addEventListener('change', (e) => {
             if(e.target.files.length > 0) {
-                fileLabel.innerText = `Seleccionado: ${e.target.files[0].name}`;
+                fileLabel.innerText = `Seleccionado: ${e.target.files.name}`;
                 fileLabel.classList.remove('text-slate-400');
                 fileLabel.classList.add('text-amber-400', 'font-medium');
             }
         });
 
-        // Enviar archivo empaquetado a Irys a través de la API
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -203,7 +198,6 @@
             }
         });
 
-        // Buscar los archivos indexados mediante consultas GraphQL oficiales de Arweave
         async function loadFiles() {
             loadingList.classList.remove('hidden');
             filesTableBody.innerHTML = '';
@@ -248,7 +242,6 @@
             checkIrysBalance();
         });
         
-        // Cargar saldos y archivos en cuanto la página enciende en Render
         window.addEventListener('DOMContentLoaded', () => {
             checkIrysBalance();
             loadFiles();
