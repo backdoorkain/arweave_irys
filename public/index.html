@@ -4,89 +4,115 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arweave Explorer & Uploader (Irys Edition)</title>
-    <!-- Agregamos un parámetro de versión para romper la caché del navegador -->
-    <script src="https://tailwindcss.com"></script>
+    <!-- Estilos Web3 integrados directamente para evitar bloqueos del navegador -->
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: system-ui, sans-serif; margin: 0; padding: 0; min-height: 100vh; }
+        .container { max-width: 1024px; margin: 0 auto; padding: 24px; }
+        header { text-center: center; padding: 32px 0; border-bottom: 1px solid #1e293b; margin-bottom: 32px; text-align: center; }
+        h1 { font-size: 2.25rem; font-weight: 800; margin: 0; background: linear-gradient(to right, #fbbf24, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
+        .card { background-color: #0f172a; border: 1px solid #334155; padding: 24px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); display: flex; flex-col: column; flex-direction: column; justify-content: space-between; }
+        h2 { font-size: 1.25rem; font-weight: 700; margin-top: 0; margin-bottom: 8px; display: flex; items-center: center; gap: 8px; }
+        .subtitle { color: #94a3b8; font-size: 0.75rem; margin: 0 0 16px 0; }
+        .balance-box { background-color: #020617; padding: 16px; border-radius: 12px; border: 1px solid #1e293b; text-align: center; margin: 8px 0; }
+        .balance-amount { font-size: 1.875rem; font-family: monospace; font-weight: 700; color: #fbbf24; }
+        .balance-label { font-size: 0.75rem; color: #64748b; block: block; margin-top: 4px; font-weight: 650; tracking-letters: 0.05em; text-transform: uppercase; }
+        .input-group { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
+        input[type="number"] { w-full: 100%; bg: #020617; background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; color: #f8fafc; font-family: monospace; outline: none; box-sizing: border-box; }
+        input[type="number"]:focus { border-color: #fbbf24; }
+        .btn { width: 100%; border-radius: 12px; font-weight: 600; padding: 10px 16px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; box-sizing: border-box; border: 1px solid transparent; }
+        .btn-slate { background: linear-gradient(to right, #1e293b, #0f172a); color: #e2e8f0; border-color: #334155; }
+        .btn-slate:hover { background: #334155; }
+        .btn-amber { background: linear-gradient(to right, #f59e0b, #ea580c); color: #ffffff; font-size: 1rem; padding: 12px 16px; box-shadow: 0 10px 15px -3px rgba(234,88,12,0.15); }
+        .btn-amber:hover { background: linear-gradient(to right, #d97706, #ca8a04); }
+        .dropzone { border: 2px dashed #334155; border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; relative: relative; position: relative; background-color: rgba(2,6,23,0.5); transition: all 0.2s; }
+        .dropzone:hover { border-color: #f59e0b; }
+        .dropzone input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .msg { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 550; display: none; }
+        .msg-blue { background-color: #071437; border: 1px solid #002b66; color: #70a1ff; }
+        .msg-green { background-color: #061c11; border: 1px solid #053b1b; color: #4ade80; }
+        .table-section { background-color: #0f172a; border: 1px solid #334155; padding: 24px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); margin-top: 32px; }
+        .table-header { display: flex; justify-content: space-between; items-center: center; margin-bottom: 24px; align-items: center; }
+        .btn-refresh { background-color: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
+        .btn-refresh:hover { background-color: #334155; }
+        .loader { text-align: center; color: #64748b; padding: 32px 0; font-size: 0.875rem; display: none; }
+        .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid rgba(51,65,85,0.6); }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.875rem; }
+        tr.th-row { background-color: #020617; border-bottom: 1px solid #334155; color: #94a3b8; }
+        th { padding: 16px; font-weight: 600; }
+        td { padding: 16px; border-bottom: 1px solid rgba(51,65,85,0.4); color: #e2e8f0; }
+        tr.data-row:hover { background-color: rgba(30,41,59,0.4); }
+        .btn-download { background-color: #1e293b; border: 1px solid #334155; color: #fbbf24; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-download:hover { background-color: #334155; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+<body>
 
-    <div class="max-w-5xl mx-auto p-6 space-y-8">
+    <div class="container">
         
-        <!-- Encabezado -->
-        <header class="text-center py-8 border-b border-slate-900">
-            <h1 class="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
-                Arweave Permaweb Box (Irys)
-            </h1>
-            <p class="text-slate-400 mt-2 text-sm">Almacenamiento permanente ultrarrápido y optimizado mediante paquetes (Bundles)</p>
+        <header>
+            <h1>Arweave Permaweb Box (Irys)</h1>
+            <p style="color: #94a3b8; margin-top: 8px; font-size: 0.875rem;">Almacenamiento permanente ultrarrápido y optimizado mediante paquetes (Bundles)</p>
         </header>
 
-        <!-- Bloque Principal de Operaciones -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid">
             
             <!-- Panel de Control de Saldo y Fondeo -->
-            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
+            <div class="card">
                 <div>
-                    <h2 class="text-xl font-bold mb-2 flex items-center gap-2">💰 Tu Saldo Irys</h2>
-                    <p class="text-slate-400 text-xs mb-4">Fondos cargados en el monedero interno del nodo de empaquetado</p>
+                    <h2>💰 Tu Saldo Irys</h2>
+                    <p class="subtitle">Fondos cargados en el monedero interno del nodo de empaquetado</p>
                     
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center my-2">
-                        <span id="txtBalance" class="text-3xl font-mono font-bold text-amber-400">0.000000</span>
-                        <span class="text-xs text-slate-500 block mt-1 font-semibold tracking-wider">AR TOKENS</span>
+                    <div class="balance-box">
+                        <div id="txtBalance" class="balance-amount">0.000000</div>
+                        <span class="balance-label">AR TOKENS</span>
                     </div>
                 </div>
                 
-                <div class="space-y-3 mt-6">
-                    <input type="number" id="fundAmount" placeholder="Monto en AR (Ej: 0.001)" step="0.0001" min="0.0001" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 font-mono focus:outline-none focus:border-amber-500 transition-colors">
-                    <button id="btnFund" class="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-slate-200 border border-slate-700 font-semibold py-2.5 px-4 rounded-xl transition text-sm shadow-md active:scale-[0.98]">
-                        📥 Depositar a Irys
-                    </button>
+                <div class="input-group">
+                    <input type="number" id="fundAmount" placeholder="Monto en AR (Ej: 0.001)" step="0.0001" min="0.0001">
+                    <button id="btnFund" class="btn btn-slate">📥 Depositar a Irys</button>
                 </div>
             </div>
 
             <!-- Panel de Subida de Archivos -->
-            <div class="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">⚡ Sube un nuevo archivo</h2>
+            <div class="card">
+                <h2>⚡ Sube un nuevo archivo</h2>
                 
-                <form id="uploadForm" class="space-y-4">
-                    <div class="border-2 border-dashed border-slate-800 hover:border-amber-500/50 transition-all rounded-xl p-8 text-center cursor-pointer relative bg-slate-950/50 group">
-                        <input type="file" id="fileInput" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                        <div class="space-y-2">
-                            <span class="text-3xl block group-hover:scale-110 transition-transform">📁</span>
-                            <p id="fileLabel" class="text-slate-400 text-sm">Arrastra tu archivo aquí o haz clic para buscar</p>
-                        </div>
+                <form id="uploadForm" style="display: flex; flex-direction: column; gap: 16px; margin: 0;">
+                    <div class="dropzone">
+                        <input type="file" id="fileInput" required>
+                        <div style="font-size: 1.875rem; margin-bottom: 8px;">📁</div>
+                        <p id="fileLabel" style="color: #94a3b8; font-size: 0.875rem; margin: 0;">Arrastra tu archivo aquí o haz clic para buscar</p>
                     </div>
                     
-                    <button type="submit" id="btnSubmit" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg shadow-orange-950/20 active:scale-[0.99]">
-                        Subir de Forma Instantánea
-                    </button>
+                    <button type="submit" id="btnSubmit" class="btn btn-amber">Subir de Forma Instantánea</button>
                 </form>
                 
-                <!-- Notificaciones de Estado -->
-                <div id="statusMessage" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
+                <div id="statusMessage" class="msg"></div>
             </div>
         </div>
 
         <!-- Sección de Listado de Archivos -->
-        <section class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold flex items-center gap-2">📁 Tus Archivos Guardados</h2>
-                <button id="btnRefresh" class="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-1.5 px-3 rounded-lg transition-all flex items-center gap-1">
-                    🔄 Actualizar todo
-                </button>
+        <section class="table-section">
+            <div class="table-header">
+                <h2>📁 Tus Archivos Guardados</h2>
+                <button id="btnRefresh" class="btn-refresh">🔄 Actualizar todo</button>
             </div>
 
-            <div id="loadingList" class="text-center text-slate-500 py-8 hidden animate-pulse">Consultando transacciones en Arweave GraphQL...</div>
+            <div id="loadingList" class="loader">Consultando transacciones en Arweave GraphQL...</div>
 
-            <!-- Tabla de Datos -->
-            <div class="overflow-x-auto rounded-xl border border-slate-800/60">
-                <table class="w-full text-left border-collapse text-sm">
+            <div class="table-wrapper">
+                <table>
                     <thead>
-                        <tr class="bg-slate-950 border-b border-slate-800 text-slate-400">
-                            <th class="p-4 font-semibold tracking-wide">Nombre</th>
-                            <th class="p-4 font-semibold tracking-wide">Tipo de Archivo</th>
-                            <th class="p-4 font-semibold tracking-wide text-right">Acción</th>
+                        <tr class="th-row">
+                            <th>Nombre</th>
+                            <th>Tipo de Archivo</th>
+                            <th style="text-align: right;">Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="filesTableBody" class="divide-y divide-slate-800/40 bg-slate-900/20">
+                    <tbody id="filesTableBody">
                         <!-- Los datos se inyectan dinámicamente -->
                     </tbody>
                 </table>
@@ -108,6 +134,7 @@
         const fundAmount = document.getElementById('fundAmount');
         const btnFund = document.getElementById('btnFund');
 
+        // Consultar el saldo en el backend
         async function checkIrysBalance() {
             try {
                 const response = await fetch('/api/balance');
@@ -120,6 +147,7 @@
             }
         }
 
+        // Petición de fondeo al backend con la wallet interna
         btnFund.addEventListener('click', async () => {
             const amount = fundAmount.value;
             if (!amount || amount <= 0) {
@@ -128,7 +156,7 @@
             }
 
             btnFund.disabled = true;
-            btnFund.innerText = "Procesando en servidor...";
+            btnFund.innerText = "Procesando...";
             
             try {
                 const response = await fetch('/api/fund', {
@@ -148,21 +176,23 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert("Error de conexión con el servidor de Render.");
+                alert("Error de conexión con el servidor.");
             } finally {
                 btnFund.disabled = false;
                 btnFund.innerText = "📥 Depositar a Irys";
             }
         });
 
+        // Evento visual al seleccionar un archivo
         fileInput.addEventListener('change', (e) => {
             if(e.target.files.length > 0) {
                 fileLabel.innerText = `Seleccionado: ${e.target.files[0].name}`;
-                fileLabel.classList.remove('text-slate-400');
-                fileLabel.classList.add('text-amber-400', 'font-medium');
+                fileLabel.style.color = '#fbbf24';
+                fileLabel.style.fontWeight = '600';
             }
         });
 
+        // Envío del archivo al backend
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -170,36 +200,40 @@
             formData.append('file', fileInput.files[0]);
 
             btnSubmit.disabled = true;
-            btnSubmit.innerText = "Procesando paquete en Irys...";
-            showMessage('Subiendo archivo al bundle y propagando a la Permaweb de forma instantánea...', 'bg-blue-950 border border-blue-800 text-blue-300');
+            btnSubmit.innerText = "Procesando...";
+            showMessage('Subiendo archivo al bundle de forma instantánea...', 'msg-blue');
 
             try {
                 const response = await fetch('/api/upload', { method: 'POST', body: formData });
                 const data = await response.json();
 
                 if (data.success) {
-                    showMessage(`🎉 ¡Completado! ID: ${data.txId}. Ya está disponible en la Web3.`, 'bg-emerald-950 border border-emerald-800 text-emerald-300');
+                    showMessage(`🎉 ¡Completado! ID: ${data.txId}. Disponible en la Web3.`, 'msg-green');
                     uploadForm.reset();
                     fileLabel.innerText = "Arrastra tu archivo aquí o haz clic para buscar";
-                    fileLabel.className = "text-slate-400 text-sm";
+                    fileLabel.style.color = '#94a3b8';
+                    fileLabel.style.fontWeight = '400';
                     
                     setTimeout(() => {
                         loadFiles();
                         checkIrysBalance();
                     }, 1500);
                 } else {
-                    showMessage(`❌ Error: ${data.error}`, 'bg-rose-950 border border-rose-800 text-rose-300');
+                    alert(`❌ Error: ${data.error}`);
+                    statusMessage.style.display = 'none';
                 }
             } catch (err) {
-                showMessage(`❌ Error de comunicación con el Web Service de Render`, 'bg-rose-950 border border-rose-800 text-rose-300');
+                alert("❌ Error de comunicación con el servidor de Render");
+                statusMessage.style.display = 'none';
             } finally {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "Subir de Forma Instantánea";
             }
         });
 
+        // Consulta GraphQL de archivos
         async function loadFiles() {
-            loadingList.classList.remove('hidden');
+            loadingList.style.display = 'block';
             filesTableBody.innerHTML = '';
             
             try {
@@ -209,32 +243,32 @@
                 if (data.success && data.files.length > 0) {
                     data.files.forEach(file => {
                         const tr = document.createElement('tr');
-                        tr.className = "hover:bg-slate-900/40 transition-colors";
+                        tr.className = "data-row";
                         tr.innerHTML = `
-                            <td class="p-4 font-medium text-slate-200 max-w-[220px] truncate">${file.name}</td>
-                            <td class="p-4 text-slate-400 text-xs font-mono">${file.type}</td>
-                            <td class="p-4 text-right">
-                                <a href="${file.url}" target="_blank" class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-amber-400 px-3 py-1.5 rounded-lg text-xs font-semibold transition border border-slate-700 shadow-sm">
-                                    ⬇️ Descargar
+                            <td style="padding: 16px; font-weight: 500; max-w-[220px]; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${file.name}</td>
+                            <td style="padding: 16px; color: #94a3b8; font-family: monospace; font-size: 0.75rem;">${file.type}</td>
+                            <td style="padding: 16px; text-align: right;">
+                                <a href="${file.url}" target="_blank" class="btn-download">
+                                    ⬇️ Ver archivo
                                 </a>
                             </td>
                         `;
                         filesTableBody.appendChild(tr);
                     });
                 } else {
-                    filesTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-slate-500 py-8">No has subido ningún archivo a través de la aplicación de Irys todavía.</td></tr>`;
+                    filesTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #64748b; padding: 32px 0;">No has subido ningún archivo a través de esta aplicación todavía.</td></tr>`;
                 }
             } catch (err) {
-                filesTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-rose-400 py-8">Error de red al consultar el Gateway de Arweave.</td></tr>`;
+                filesTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #f87171; padding: 32px 0;">Error de red al consultar el Gateway de Arweave.</td></tr>`;
             } finally {
-                loadingList.classList.add('hidden');
+                loadingList.style.display = 'none';
             }
         }
 
-        function showMessage(text, classes) {
+        function showMessage(text, className) {
             statusMessage.innerText = text;
-            statusMessage.className = `mt-4 p-3 rounded-lg text-sm font-medium ${classes}`;
-            statusMessage.classList.remove('hidden');
+            statusMessage.className = `msg ${className}`;
+            statusMessage.style.display = 'block';
         }
 
         btnRefresh.addEventListener('click', () => {
