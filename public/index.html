@@ -119,7 +119,7 @@
             }
         }
 
-        // Integración segura con la extensión Wander/ArConnect instalada en el navegador
+        // Integración directa con el backend para fondear usando la billetera interna
         btnFund.addEventListener('click', async () => {
             const amount = fundAmount.value;
             if (!amount || amount <= 0) {
@@ -127,31 +127,32 @@
                 return;
             }
 
-            if (!window.arweaveWallet) {
-                alert("No se detectó Wander (ArConnect) instalado. Te redirigiremos para que agregues la extensión.");
-                window.open("https://wander.app", "_blank");
-                return;
-            }
-
             btnFund.disabled = true;
-            btnFund.innerText = "Abriendo Wander...";
-
+            btnFund.innerText = "Procesando fondeo en servidor...";
+            
             try {
-                // Solicitar accesos básicos a la billetera criptográfica del usuario
-                await window.arweaveWallet.connect(["ACCESS_ADDRESS", "SIGN_TRANSACTION"]);
-                const userAddress = await window.arweaveWallet.getActiveAddress();
+                const response = await fetch('/api/fund', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
                 
-                alert(`Conectado a Wander: ${userAddress}\n\nPara firmar transacciones financieras de forma robusta y evitar riesgos de inyección, la interfaz de administración oficial de Irys es la vía recomendada. Te abriremos la pestaña para confirmar.`);
+                const data = await response.json();
                 
-                // Abrir la interfaz web de Irys para que realicen la firma con soporte de librerías actualizado
-                window.open("https://irys.xyz", "_blank");
+                if (data.success) {
+                    alert(`🎉 ¡Transacción enviada! Tu depósito se procesará en el siguiente bloque de Arweave.\n\nID de Transacción: ${data.txId}`);
+                    fundAmount.value = '';
+                    // Esperar unos segundos y refrescar balance
+                    setTimeout(checkIrysBalance, 5000);
+                } else {
+                    alert(`❌ Error al fondear: ${data.error}`);
+                }
             } catch (err) {
                 console.error(err);
-                alert("Operación cancelada por el usuario o rechazada por la billetera.");
+                alert("Error de conexión con el servidor de Render.");
             } finally {
                 btnFund.disabled = false;
-                btnFund.innerText = "📥 Depositar con Wander";
-                setTimeout(checkIrysBalance, 5000);
+                btnFund.innerText = "📥 Depositar con Wallet Interna";
             }
         });
 
