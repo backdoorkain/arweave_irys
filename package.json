@@ -1,0 +1,14 @@
+{
+  "name": "arweave-irys-uploader",
+  "version": "1.0.0",
+  "description": "Subida optimizada a Arweave usando Irys Bundles",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@irys/sdk": "^0.2.11",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
