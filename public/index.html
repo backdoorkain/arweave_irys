@@ -4,29 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arweave Explorer & Uploader (Irys Edition)</title>
-    <!-- Estilos Web3 integrados directamente para evitar bloqueos del navegador -->
     <style>
         body { background-color: #020617; color: #f8fafc; font-family: system-ui, sans-serif; margin: 0; padding: 0; min-height: 100vh; }
         .container { max-width: 1024px; margin: 0 auto; padding: 24px; }
-        header { text-center: center; padding: 32px 0; border-bottom: 1px solid #1e293b; margin-bottom: 32px; text-align: center; }
+        header { text-align: center; padding: 32px 0; border-bottom: 1px solid #1e293b; margin-bottom: 32px; }
         h1 { font-size: 2.25rem; font-weight: 800; margin: 0; background: linear-gradient(to right, #fbbf24, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
         @media (min-width: 768px) { .grid { grid-template-columns: 1fr 2fr; } }
-        .card { background-color: #0f172a; border: 1px solid #334155; padding: 24px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); display: flex; flex-col: column; flex-direction: column; justify-content: space-between; }
+        .card { background-color: #0f172a; border: 1px solid #334155; padding: 24px; border-radius: 16px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: space-between; }
         h2 { font-size: 1.25rem; font-weight: 700; margin-top: 0; margin-bottom: 8px; display: flex; items-center: center; gap: 8px; }
         .subtitle { color: #94a3b8; font-size: 0.75rem; margin: 0 0 16px 0; }
         .balance-box { background-color: #020617; padding: 16px; border-radius: 12px; border: 1px solid #1e293b; text-align: center; margin: 8px 0; }
         .balance-amount { font-size: 1.875rem; font-family: monospace; font-weight: 700; color: #fbbf24; }
-        .balance-label { font-size: 0.75rem; color: #64748b; block: block; margin-top: 4px; font-weight: 650; tracking-letters: 0.05em; text-transform: uppercase; }
+        .balance-label { font-size: 0.75rem; color: #64748b; block: block; margin-top: 4px; font-weight: 650; text-transform: uppercase; }
         .input-group { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
-        input[type="number"] { w-full: 100%; bg: #020617; background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; color: #f8fafc; font-family: monospace; outline: none; box-sizing: border-box; }
+        input[type="number"] { width: 100%; background-color: #020617; border: 1px solid #1e293b; border-radius: 12px; padding: 10px 16px; font-size: 0.875rem; color: #f8fafc; font-family: monospace; outline: none; box-sizing: border-box; }
         input[type="number"]:focus { border-color: #fbbf24; }
         .btn { width: 100%; border-radius: 12px; font-weight: 600; padding: 10px 16px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; box-sizing: border-box; border: 1px solid transparent; }
         .btn-slate { background: linear-gradient(to right, #1e293b, #0f172a); color: #e2e8f0; border-color: #334155; }
         .btn-slate:hover { background: #334155; }
         .btn-amber { background: linear-gradient(to right, #f59e0b, #ea580c); color: #ffffff; font-size: 1rem; padding: 12px 16px; box-shadow: 0 10px 15px -3px rgba(234,88,12,0.15); }
         .btn-amber:hover { background: linear-gradient(to right, #d97706, #ca8a04); }
-        .dropzone { border: 2px dashed #334155; border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; relative: relative; position: relative; background-color: rgba(2,6,23,0.5); transition: all 0.2s; }
+        .dropzone { border: 2px dashed #334155; border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; position: relative; background-color: rgba(2,6,23,0.5); transition: all 0.2s; }
         .dropzone:hover { border-color: #f59e0b; }
         .dropzone input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         .msg { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 550; display: none; }
@@ -50,55 +49,42 @@
 <body>
 
     <div class="container">
-        
         <header>
             <h1>Arweave Permaweb Box (Irys)</h1>
             <p style="color: #94a3b8; margin-top: 8px; font-size: 0.875rem;">Almacenamiento permanente ultrarrápido y optimizado mediante paquetes (Bundles)</p>
         </header>
 
         <div class="grid">
-            
-            <!-- Panel de Control de Saldo, Fondeo y Retiro (Actualizado) -->
+            <!-- Panel de Control de Saldo, Fondeo y Retiro -->
             <div class="card">
                 <div>
                     <h2>💰 Tu Saldo Irys</h2>
                     <p class="subtitle">Fondos cargados en el monedero interno del nodo de empaquetado</p>
-                    
                     <div class="balance-box">
                         <div id="txtBalance" class="balance-amount">0.000000</div>
                         <span class="balance-label">AR TOKENS</span>
                     </div>
                 </div>
-                
-                <!-- Sección para depositar -->
                 <div class="input-group" style="margin-top: 16px;">
                     <input type="number" id="fundAmount" placeholder="Monto para depositar (AR)" step="0.0001" min="0.0001">
                     <button id="btnFund" class="btn btn-slate">📥 Depositar a Irys</button>
                 </div>
-
-                <!-- Sección para retirar (Nueva) -->
                 <div class="input-group" style="margin-top: 16px; border-top: 1px dashed #334155; padding-top: 16px;">
                     <input type="number" id="withdrawAmount" placeholder="Monto para retirar (AR)" step="0.0001" min="0.0001">
-                    <button id="btnWithdraw" class="btn" style="background: linear-gradient(to right, #991b1b, #7f1d1d); color: #fca5a5; border-color: #991b1b;">
-                        📤 Retirar de Irys
-                    </button>
+                    <button id="btnWithdraw" class="btn" style="background: linear-gradient(to right, #991b1b, #7f1d1d); color: #fca5a5; border-color: #991b1b;">📤 Retirar de Irys</button>
                 </div>
             </div>
-
-            <!-- Panel de Subida de Archivos -->
+                        <!-- Panel de Subida de Archivos -->
             <div class="card">
                 <h2>⚡ Sube un nuevo archivo</h2>
-                
                 <form id="uploadForm" style="display: flex; flex-direction: column; gap: 16px; margin: 0;">
                     <div class="dropzone">
                         <input type="file" id="fileInput" required>
                         <div style="font-size: 1.875rem; margin-bottom: 8px;">📁</div>
                         <p id="fileLabel" style="color: #94a3b8; font-size: 0.875rem; margin: 0;">Arrastra tu archivo aquí o haz clic para buscar</p>
                     </div>
-                    
                     <button type="submit" id="btnSubmit" class="btn btn-amber">Subir de Forma Instantánea</button>
                 </form>
-                
                 <div id="statusMessage" class="msg"></div>
             </div>
         </div>
@@ -109,9 +95,7 @@
                 <h2>📁 Tus Archivos Guardados</h2>
                 <button id="btnRefresh" class="btn-refresh">🔄 Actualizar todo</button>
             </div>
-
             <div id="loadingList" class="loader">Consultando transacciones en Arweave GraphQL...</div>
-
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -128,7 +112,7 @@
             </div>
         </section>
     </div>
-    <!-- Lógica del Cliente -->
+        <!-- Lógica del Cliente -->
     <script>
         const fileInput = document.getElementById('fileInput');
         const fileLabel = document.getElementById('fileLabel');
@@ -142,8 +126,10 @@
         const txtBalance = document.getElementById('txtBalance');
         const fundAmount = document.getElementById('fundAmount');
         const btnFund = document.getElementById('btnFund');
+        
+        const withdrawAmount = document.getElementById('withdrawAmount');
+        const btnWithdraw = document.getElementById('btnWithdraw');
 
-        // Consultar el saldo en el backend
         async function checkIrysBalance() {
             try {
                 const response = await fetch('/api/balance');
@@ -156,26 +142,21 @@
             }
         }
 
-        // Petición de fondeo al backend con la wallet interna
         btnFund.addEventListener('click', async () => {
             const amount = fundAmount.value;
             if (!amount || amount <= 0) {
                 alert("Por favor introduce una cantidad en AR válida.");
                 return;
             }
-
             btnFund.disabled = true;
             btnFund.innerText = "Procesando...";
-            
             try {
                 const response = await fetch('/api/fund', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ amount: amount })
                 });
-                
                 const data = await response.json();
-                
                 if (data.success) {
                     alert(`🎉 ¡Transacción enviada!\n\nTu depósito se procesará en el siguiente bloque de Arweave.\nID de Transacción: ${data.txId}`);
                     fundAmount.value = '';
@@ -192,7 +173,40 @@
             }
         });
 
-        // Evento visual al seleccionar un archivo
+        btnWithdraw.addEventListener('click', async () => {
+            const amount = withdrawAmount.value;
+            if (!amount || amount <= 0) {
+                alert("Por favor introduce una cantidad en AR válida para retirar.");
+                return;
+            }
+            if (!confirm(`¿Estás seguro de que deseas retirar ${amount} AR de Irys de vuelta a tu balance general?`)) {
+                return;
+            }
+            btnWithdraw.disabled = true;
+            btnWithdraw.innerText = "Procesando retiro...";
+            try {
+                const response = await fetch('/api/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert(`🎉 ¡Orden de retiro procesada!\n\nIrys ha enviado tus fondos de vuelta. El saldo se reflejará en tu wallet general en el siguiente bloque de Arweave.`);
+                    withdrawAmount.value = '';
+                    setTimeout(checkIrysBalance, 5000);
+                } else {
+                    alert(`❌ Error al retirar: ${data.error}`);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error de conexión con el servidor de Render.");
+            } finally {
+                btnWithdraw.disabled = false;
+                btnWithdraw.innerText = "📤 Retirar de Irys";
+            }
+        });
+
         fileInput.addEventListener('change', (e) => {
             if(e.target.files.length > 0) {
                 fileLabel.innerText = `Seleccionado: ${e.target.files[0].name}`;
@@ -201,32 +215,23 @@
             }
         });
 
-        // Envío del archivo al backend
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
-
             btnSubmit.disabled = true;
             btnSubmit.innerText = "Procesando...";
             showMessage('Subiendo archivo al bundle de forma instantánea...', 'msg-blue');
-
             try {
                 const response = await fetch('/api/upload', { method: 'POST', body: formData });
                 const data = await response.json();
-
                 if (data.success) {
                     showMessage(`🎉 ¡Completado! ID: ${data.txId}. Disponible en la Web3.`, 'msg-green');
                     uploadForm.reset();
                     fileLabel.innerText = "Arrastra tu archivo aquí o haz clic para buscar";
                     fileLabel.style.color = '#94a3b8';
                     fileLabel.style.fontWeight = '400';
-                    
-                    setTimeout(() => {
-                        loadFiles();
-                        checkIrysBalance();
-                    }, 1500);
+                    setTimeout(() => { loadFiles(); checkIrysBalance(); }, 1500);
                 } else {
                     alert(`❌ Error: ${data.error}`);
                     statusMessage.style.display = 'none';
@@ -240,15 +245,12 @@
             }
         });
 
-        // Consulta GraphQL de archivos
         async function loadFiles() {
             loadingList.style.display = 'block';
             filesTableBody.innerHTML = '';
-            
             try {
                 const response = await fetch('/api/files');
                 const data = await response.json();
-                
                 if (data.success && data.files.length > 0) {
                     data.files.forEach(file => {
                         const tr = document.createElement('tr');
@@ -257,9 +259,7 @@
                             <td style="padding: 16px; font-weight: 500; max-w-[220px]; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${file.name}</td>
                             <td style="padding: 16px; color: #94a3b8; font-family: monospace; font-size: 0.75rem;">${file.type}</td>
                             <td style="padding: 16px; text-align: right;">
-                                <a href="${file.url}" target="_blank" class="btn-download">
-                                    ⬇️ Ver archivo
-                                </a>
+                                <a href="${file.url}" target="_blank" class="btn-download">⬇️ Ver archivo</a>
                             </td>
                         `;
                         filesTableBody.appendChild(tr);
@@ -280,15 +280,8 @@
             statusMessage.style.display = 'block';
         }
 
-        btnRefresh.addEventListener('click', () => {
-            loadFiles();
-            checkIrysBalance();
-        });
-        
-        window.addEventListener('DOMContentLoaded', () => {
-            checkIrysBalance();
-            loadFiles();
-        });
+        btnRefresh.addEventListener('click', () => { loadFiles(); checkIrysBalance(); });
+        window.addEventListener('DOMContentLoaded', () => { checkIrysBalance(); loadFiles(); });
     </script>
 </body>
 </html>
