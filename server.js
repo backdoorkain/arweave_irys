@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { Uploader } = require('@irys/sdk');
+const Irys = require('@irys/sdk');
 const fs = require('fs');
 const path = require('path');
 
