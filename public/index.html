@@ -58,7 +58,7 @@
 
         <div class="grid">
             
-            <!-- Panel de Control de Saldo y Fondeo -->
+            <!-- Panel de Control de Saldo, Fondeo y Retiro (Actualizado) -->
             <div class="card">
                 <div>
                     <h2>💰 Tu Saldo Irys</h2>
@@ -70,9 +70,18 @@
                     </div>
                 </div>
                 
-                <div class="input-group">
-                    <input type="number" id="fundAmount" placeholder="Monto en AR (Ej: 0.001)" step="0.0001" min="0.0001">
+                <!-- Sección para depositar -->
+                <div class="input-group" style="margin-top: 16px;">
+                    <input type="number" id="fundAmount" placeholder="Monto para depositar (AR)" step="0.0001" min="0.0001">
                     <button id="btnFund" class="btn btn-slate">📥 Depositar a Irys</button>
+                </div>
+
+                <!-- Sección para retirar (Nueva) -->
+                <div class="input-group" style="margin-top: 16px; border-top: 1px dashed #334155; padding-top: 16px;">
+                    <input type="number" id="withdrawAmount" placeholder="Monto para retirar (AR)" step="0.0001" min="0.0001">
+                    <button id="btnWithdraw" class="btn" style="background: linear-gradient(to right, #991b1b, #7f1d1d); color: #fca5a5; border-color: #991b1b;">
+                        📤 Retirar de Irys
+                    </button>
                 </div>
             </div>
 
