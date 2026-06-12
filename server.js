@@ -8,29 +8,34 @@ const app = express();
 const upload = multer({ dest: 'uploads/' });
 const PORT = process.env.PORT || 3000;
 
-// Inicializar la conexión unificada de Irys con la sintaxis moderna de Mainnet
+// Inicializar variables globales
 let irysInstance;
 let walletAddress = "";
 
-try {
-    if (process.env.ARWEAVE_WALLET) {
-        const wallet = JSON.parse(process.env.ARWEAVE_WALLET);
-        
-        // CORRECCIÓN PRINCIPAL: Usamos 'network: "mainnet"' en lugar de la URL directa del nodo
-        irysInstance = new Irys({
-            network: "mainnet", // Configura automáticamente los endpoints correctos de producción
-            token: "arweave",
-            key: wallet,
-        });
+// 1. Envolver la inicialización de Irys en una función asíncrona dedicada
+async function inicializarIrys() {
+    try {
+        if (process.env.ARWEAVE_WALLET) {
+            const wallet = JSON.parse(process.env.ARWEAVE_WALLET);
+            
+            irysInstance = new Irys({
+                network: "mainnet",
+                token: "arweave",
+                key: wallet,
+            });
 
-        walletAddress = irysInstance.address;
-        console.log(`>>> Conectado exitosamente a Irys Mainnet. Dirección: ${walletAddress}`);
-    } else {
-        console.error(">>> ERROR DE SEGURIDAD: Falta definir la variable ARWEAVE_WALLET.");
+            walletAddress = irysInstance.address;
+            console.log(`>>> Conectado exitosamente a Irys Mainnet. Dirección: ${walletAddress}`);
+        } else {
+            console.error(">>> ERROR DE SEGURIDAD: Falta definir la variable ARWEAVE_WALLET.");
+        }
+    } catch (error) {
+        console.error(">>> ERROR al inicializar Irys:", error.message);
     }
-} catch (error) {
-    console.error(">>> ERROR al inicializar Irys:", error.message);
 }
+
+// Ejecutar la inicialización segura de inmediato
+inicializarIrys();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -51,7 +56,6 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             { name: 'File-Name', value: req.file.originalname }
         ];
 
-        // Ejecutar subida empaquetada (Gratis si pesa menos de 100 KB)
         const receipt = await irysInstance.upload(dataBuffer, { tags });
 
         if (fs.existsSync(req.file.path)) {
@@ -74,23 +78,28 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // --- RUTA 2: LISTAR ARCHIVOS (GraphQL) ---
-app.get('/api/balance', async (req, res) => {
+app.get('/api/files', async (req, res) => {
     try {
-        if (!irysInstance) return res.status(500).json({ error: 'Instancia Irys no inicializada.' });
-        
-        // Obtener el saldo en la unidad mínima (Winston)
-        const atomicBalance = await irysInstance.getLoadedBalance();
-        
-        // Convertirlo a formato legible de AR tokens usando el SDK interno
-        const arBalance = irysInstance.utils.fromAtomic(atomicBalance).toString();
-        
-        res.json({ success: true, balance: arBalance });
-    } catch (error) {
-        console.error("Error al consultar saldo:", error);
-        res.status(500).json({ error: error.message });
-    }
-});
+        if (!walletAddress) return res.status(500).json({ error: 'Dirección de billetera no lista.' });
 
+        const query = {
+            query: `query {
+              transactions(
+                owners: ["${walletAddress}"]
+                tags: { name: "App-Name", values: ["MiArweaveIrysUploader"] }
+                first: 50
+              ) {
+                edges {
+                  node {
+                    id
+                    tags { name value }
+                  }
+                }
+              }
+            }`
+        };
+
+        // CORRECCIÓN CLAVE: El endpoint maneja el await correctamente dentro del contexto 'async' de la ruta Express
         const response = await irysInstance.api.post('/graphql', query);
         const edges = response.data.data.transactions.edges;
 
@@ -103,13 +112,28 @@ app.get('/api/balance', async (req, res) => {
                 id: edge.node.id,
                 name: nameTag ? nameTag.value : 'Archivo sin nombre',
                 type: typeTag ? typeTag.value : 'Desconocido',
-                url: `https://arweave.net/${edge.node.id}`
+                url: `https://arweave.net{edge.node.id}`
             };
         });
 
         res.json({ success: true, files });
     } catch (error) {
         console.error("Fallo en GraphQL:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- RUTA 3: CONSULTAR SALDO ACTUAL EN EL NODO DE IRYS ---
+app.get('/api/balance', async (req, res) => {
+    try {
+        if (!irysInstance) return res.status(500).json({ error: 'Instancia Irys no inicializada.' });
+        
+        const atomicBalance = await irysInstance.getLoadedBalance();
+        const arBalance = irysInstance.utils.fromAtomic(atomicBalance).toString();
+        
+        res.json({ success: true, balance: arBalance });
+    } catch (error) {
+        console.error("Error al consultar saldo:", error);
         res.status(500).json({ error: error.message });
     }
 });
